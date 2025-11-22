@@ -52,43 +52,10 @@ class GridModel {
   @objc public func stepGPU() {
     guard
       UIApplication.shared.applicationState == .active,
-      let pipeline,
-      let commandBuffer = pipeline.commandQueue.makeCommandBuffer(),
-      let commandEncoder = commandBuffer.makeComputeCommandEncoder()
+      let pipeline
     else {
       return
     }
-
-    pipeline.inputBuffer.copyFloat32(from: values)
-
-    commandEncoder.setComputePipelineState(pipeline.computePipelineState)
-
-    commandEncoder.setBuffers(
-      [
-        pipeline.inputBuffer,
-        pipeline.outputBuffer,
-        pipeline.constantsBuffer,
-      ],
-      offsets: [0, 0, 0],
-      range: 0..<3
-    )
-
-    let threadgroupSize = MTLSize(width: 32, height: 16, depth: 1)
-    let gridSize = MTLSize(width: width, height: height, depth: 1)
-    let threadgroupsPerGrid = MTLSize(
-      width: gridSize.width / threadgroupSize.width + 1,
-      height: gridSize.height / threadgroupSize.height + 1,
-      depth: 1,
-    )
-
-    commandEncoder.dispatchThreadgroups(
-      threadgroupsPerGrid,
-      threadsPerThreadgroup: threadgroupSize,
-    )
-    commandEncoder.endEncoding()
-    commandBuffer.commit()
-    commandBuffer.waitUntilCompleted()
-
-    values.copy(from: pipeline.outputBuffer)
+    values = pipeline.nextState(for: values)
   }
 }

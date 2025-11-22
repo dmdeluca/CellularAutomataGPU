@@ -43,7 +43,7 @@ struct ContentView: View {
         }
         .onAppear {
           guard model == nil else { return }
-          model = GridModel(width: Int(geo.size.width), height: Int(geo.size.height))
+          model = GridModel(width: Int(geo.size.width / 2), height: Int(geo.size.height / 2))
           if model?.error == .failedToInitializePipeline {
             isShowingAlert = true
           }
