@@ -19,6 +19,7 @@ struct ContentView: View {
         ZStack {
           if let model {
             Color.black.colorEffect(
+              // Use a shader function to draw all of the cell colors.
               ShaderLibrary.cells(
                 .floatArray(model.values),
                 .float2(Float(model.width), Float(model.height)),
@@ -29,6 +30,7 @@ struct ContentView: View {
         }
         .gesture(
           DragGesture(minimumDistance: 0)
+            // Draw a small grid of cells when the user draws.
             .onChanged { value in
               model?.drawCells(at: value.location, in: geo)
             }

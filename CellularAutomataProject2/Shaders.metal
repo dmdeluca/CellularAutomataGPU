@@ -8,23 +8,24 @@
 #include <metal_stdlib>
 using namespace metal;
 
+/**
+ Calculates the color for a cell at a given position.
+ */
 [[stitchable]] half4
 cells(float2 position, half4 currentValue, device const float *values, int,
-      //                           device const half4 *colors, int,
       float2 rowsAndColumns, float4 boundingRect) {
   int iWidth = (int)rowsAndColumns.x;
   int xValue = (int)((position[0]) / boundingRect[2] * rowsAndColumns.x);
   int yValue = (int)((position[1]) / boundingRect[3] * rowsAndColumns.y);
   int index = yValue * iWidth + xValue;
-  //  half4 color = half4(0,0,0,1);
-  //  if (values[index] > 0.999) {
-  //    color = colors[index];
-  //  }
   half4 color = half4(values[index], values[index], values[index], 1);
   half4 finalColor = color;
   return finalColor;
 }
 
+/**
+ Calculates the next state for a cell.
+ */
 kernel void cellStepGPU(const device float *inBuffer, device float *outBuffer,
                         const device float *constantsBuffer,
                         uint2 id [[thread_position_in_grid]]) {

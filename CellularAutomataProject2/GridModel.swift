@@ -8,14 +8,18 @@
 import Observation
 import UIKit
 
+/// The model that represents all of the values in the grid and executes a step function.
 @Observable
 class GridModel {
-  
+
   enum Error: Swift.Error {
     case failedToInitializePipeline
   }
 
+  /// The value of every cell in the grid.
   var values: [Float32]
+
+  /// Any error that occurred during setup or execution.
   var error: Error?
 
   @ObservationIgnored let width: Int
@@ -31,10 +35,14 @@ class GridModel {
         Float32(Int.random(in: 0...1))
       }
     )
+
+    // Set up the display link.
     let link = CADisplayLink(target: self, selector: #selector(stepGPU))
     link.add(to: .current, forMode: .default)
     link.preferredFramesPerSecond = 30
     self.displayLink = link
+
+    // Set up the compute pipeline.
     self.pipeline = GPUComputePipeline(width: width, height: height)
     if pipeline == nil {
       self.error = .failedToInitializePipeline
@@ -43,6 +51,7 @@ class GridModel {
 
   @objc public func stepGPU() {
     guard
+      UIApplication.shared.applicationState == .active,
       let pipeline,
       let commandBuffer = pipeline.commandQueue.makeCommandBuffer(),
       let commandEncoder = commandBuffer.makeComputeCommandEncoder()
@@ -63,7 +72,7 @@ class GridModel {
       offsets: [0, 0, 0],
       range: 0..<3
     )
-    
+
     let threadgroupSize = MTLSize(width: 32, height: 16, depth: 1)
     let gridSize = MTLSize(width: width, height: height, depth: 1)
     let threadgroupsPerGrid = MTLSize(
@@ -71,7 +80,7 @@ class GridModel {
       height: gridSize.height / threadgroupSize.height + 1,
       depth: 1,
     )
-    
+
     commandEncoder.dispatchThreadgroups(
       threadgroupsPerGrid,
       threadsPerThreadgroup: threadgroupSize,
